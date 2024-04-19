@@ -165,7 +165,8 @@ This is usually the base name of `pyvenv-virtual-env'.")
 
 (defvar pyvenv-mode-line-indicator '(pyvenv-virtual-env-name
                                      ("[" pyvenv-virtual-env-name "] "))
-  "How `pyvenv-mode' will indicate the current environment in the mode line.")
+  "How `pyvenv-mode' will indicate the current environment in the mode line.
+Takes effect when `pyvenv-mode-show-indicator' is non-nil.")
 
 ;; Internal code.
 
@@ -352,6 +353,19 @@ configured."
     ["Restart Python Processes" pyvenv-restart-python
      :help "Restart all Python processes to use the current environment"]))
 
+(defvar-local pyvenv-mode-show-indicator nil
+  "Whether to show `pyvenv-mode-line-indicator' in this buffer.
+By default set in `python-mode' and `inferior-python-mode' buffers.
+To show in all buffers, use (setq-default pyvenv-mode-show-indicator t).")
+
+(defun pyvenv-show-mode-line-indicator ()
+  "Enable showing `pyvenv-mode-line-indicator' in this buffer."
+  (setq-local pyvenv-mode-show-indicator t))
+
+(add-hook 'python-mode-hook #'pyvenv-show-mode-line-indicator)
+(add-hook 'python-ts-mode-hook #'pyvenv-show-mode-line-indicator)
+(add-hook 'inferior-python-mode-hook #'pyvenv-show-mode-line-indicator)
+
 ;;;###autoload
 (define-minor-mode pyvenv-mode
   "Global minor mode for pyvenv.
@@ -361,10 +375,10 @@ Will show the current virtualenv in the mode line, and respect a
   :global t
   (cond
    (pyvenv-mode
-    (add-to-list 'mode-line-misc-info '(pyvenv-mode pyvenv-mode-line-indicator))
+    (add-to-list 'mode-line-misc-info '(pyvenv-mode-show-indicator pyvenv-mode-line-indicator))
     (add-hook 'hack-local-variables-hook #'pyvenv-track-virtualenv))
    ((not pyvenv-mode)
-    (setq mode-line-misc-info (delete '(pyvenv-mode pyvenv-mode-line-indicator)
+    (setq mode-line-misc-info (delete '(pyvenv-mode-show-indicator pyvenv-mode-line-indicator)
                                       mode-line-misc-info))
     (remove-hook 'hack-local-variables-hook #'pyvenv-track-virtualenv))))
 
